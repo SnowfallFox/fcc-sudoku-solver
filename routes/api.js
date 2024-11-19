@@ -5,7 +5,7 @@ const SudokuSolver = require('../controllers/sudoku-solver.js');
 module.exports = function (app) {
   
   let solver = new SudokuSolver();
-  // TODO: tests 10 and 13
+  // TODO: test 9
   app.route('/api/check')
     .post((req, res) => {
       let puzzle = req.body.puzzle;
@@ -13,7 +13,18 @@ module.exports = function (app) {
       let value = req.body.value;
       let valid = true;
       let conflicts = [];
+      let puzzleRegex = /[^0-9|.]+/gmi
+      let coordRegex1 = /[a-iA-I]/gm
+      let coordRegex2 = /[1-9]/gm
       let validation = solver.validate(puzzle)
+
+      if ( coord.length > 2 || !coord[0].match(coordRegex1) || !coord[1].match(coordRegex2)) {
+        res.json({ error: 'Invalid coordinate'})
+      }
+
+      if (puzzle.match(puzzleRegex)) {
+        res.json({ error: 'Invalid characters in puzzle' })
+      }
 
       if (!puzzle || !coord || !value) {
         res.json({  error: 'Required field(s) missing' })
@@ -25,13 +36,13 @@ module.exports = function (app) {
       
       if (validation) {
         // if any return false, conflict = all false returns and valid = false
-        if (!solver.checkRowPlacement(puzzle,coord[0],coord[1], value)) {
+        if (!solver.checkRowPlacement(puzzle,coord[0].toUpperCase(),coord[1], value)) {
           conflicts.push('row')
         } 
-        if (!solver.checkColPlacement(puzzle,coord[0],coord[1], value)) {
+        if (!solver.checkColPlacement(puzzle,coord[0].toUpperCase(),coord[1], value)) {
           conflicts.push('column')
         }
-        if (!solver.checkRegionPlacement(puzzle,coord[0],coord[1], value)) {
+        if (!solver.checkRegionPlacement(puzzle,coord[0].toUpperCase(),coord[1], value)) {
           conflicts.push('region')
         }
         

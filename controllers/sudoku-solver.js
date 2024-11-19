@@ -20,6 +20,7 @@ class SudokuSolver {
       'H': [63,72],
       'I': [72,81]
     }
+    console.log(row)
     let currentCell = rows[row][0] + Number(column-1)
     // if testing cell IS the value, return true as it should not conflict with itself
     if (puzzleString[currentCell] === value) {
