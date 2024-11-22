@@ -5,7 +5,7 @@ const SudokuSolver = require('../controllers/sudoku-solver.js');
 module.exports = function (app) {
   
   let solver = new SudokuSolver();
-  // TODO: test 9
+
   app.route('/api/check')
     .post((req, res) => {
       let puzzle = req.body.puzzle;
@@ -13,28 +13,22 @@ module.exports = function (app) {
       let value = req.body.value;
       let valid = true;
       let conflicts = [];
-      let puzzleRegex = /[^0-9|.]+/gmi
       let coordRegex1 = /[a-iA-I]/gm
       let coordRegex2 = /[1-9]/gm
       let validation = solver.validate(puzzle)
 
-      if ( coord.length > 2 || !coord[0].match(coordRegex1) || !coord[1].match(coordRegex2)) {
-        res.json({ error: 'Invalid coordinate'})
-      }
-
-      if (puzzle.match(puzzleRegex)) {
-        res.json({ error: 'Invalid characters in puzzle' })
-      }
-
-      if (!puzzle || !coord || !value) {
-        res.json({  error: 'Required field(s) missing' })
-      }
-
-      if (isNaN(value) || value < 1 || value > 9) {
+      // if required fields missing, throw error
+      if (!req.body.puzzle || !req.body.coordinate || !req.body.value) {
+        console.log(puzzle, coord, value)
+        res.json({ error:'Required field(s) missing' })
+      // if invalid coordinate entered, throw error
+      } else if (String(coord).length !== 2 || !coord[0].match(coordRegex1) || !coord[1].match(coordRegex2)) {
+        res.json({ error: 'Invalid coordinate' })
+      // if invalid value, throw error
+      } else if (isNaN(value) || value < 1 || value > 9) {
         res.json({ error: 'Invalid value' })
-      }
-      
-      if (validation) {
+      // if puzzle passes length validation check
+      } else if (validation === true) {
         // if any return false, conflict = all false returns and valid = false
         if (!solver.checkRowPlacement(puzzle,coord[0].toUpperCase(),coord[1], value)) {
           conflicts.push('row')
@@ -54,16 +48,35 @@ module.exports = function (app) {
           res.json({ valid:valid })
         // if conflicts
         } else {
-          res.json({ valid:valid, conflicts:conflicts})
+          res.json({ valid:valid, conflict:conflicts })
         }
       // if puzzle string is too long or short
-      } else {
+      } else if (!validation) {
         res.json({ error: 'Expected puzzle to be 81 characters long' })
+      } else {
+        res.json({ error: 'Invalid characters in puzzle' })
       }
     });
     
+
   app.route('/api/solve')
     .post((req, res) => {
-
+      let puzzle = req.body.puzzle;
+      
+      // if required fields missing, throw error
+      if (!puzzle) {
+        res.json({  error: 'Required field missing' })
+      // if puzzle passes length validation check
+      } else if (solver.validate(puzzle) === true) {
+        if (solver.solve(puzzle)) {
+          res.json({ solution:solver.solve(puzzle) })
+        }
+        res.json({ error:'Puzzle cannot be solved' })
+      // if puzzle string is too long or short
+      } else if (!solver.validate(puzzle)) {
+        res.json({ error: 'Expected puzzle to be 81 characters long' })
+      } else {
+        res.json({ error: 'Invalid characters in puzzle'})
+      }
     });
 };
