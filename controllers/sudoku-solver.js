@@ -2,7 +2,7 @@ class SudokuSolver {
 
   validate(puzzleString) {
     let puzzleRegex = /[^0-9.]+/gmi
-    if (puzzleString.match(puzzleRegex)) {
+    if (puzzleString && puzzleString.match(puzzleRegex)) {
       return { error: 'Invalid characters in puzzle' }
     } else if (String(puzzleString).length === 81) {
       return true

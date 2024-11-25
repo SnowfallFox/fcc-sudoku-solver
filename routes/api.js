@@ -20,7 +20,7 @@ module.exports = function (app) {
       // if required fields missing, throw error
       if (!req.body.puzzle || !req.body.coordinate || !req.body.value) {
         console.log(puzzle, coord, value)
-        res.json({ error:'Required field(s) missing' })
+        res.json({ error: 'Required field(s) missing' })
       // if invalid coordinate entered, throw error
       } else if (String(coord).length !== 2 || !coord[0].match(coordRegex1) || !coord[1].match(coordRegex2)) {
         res.json({ error: 'Invalid coordinate' })
